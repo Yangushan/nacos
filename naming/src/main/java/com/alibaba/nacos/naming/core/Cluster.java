@@ -238,7 +238,8 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
     public void updateIps(List<Instance> ips, boolean ephemeral) {
         
         Set<Instance> toUpdateInstances = ephemeral ? ephemeralInstances : persistentInstances;
-        
+
+        // copy on write 思想
         HashMap<String, Instance> oldIpMap = new HashMap<>(toUpdateInstances.size());
         
         for (Instance ip : toUpdateInstances) {
@@ -293,7 +294,8 @@ public class Cluster extends com.alibaba.nacos.api.naming.pojo.Cluster implement
                 HealthCheckStatus.remv(ip);
             }
         }
-        
+
+        // copy on write
         toUpdateInstances = new HashSet<>(ips);
         
         if (ephemeral) {

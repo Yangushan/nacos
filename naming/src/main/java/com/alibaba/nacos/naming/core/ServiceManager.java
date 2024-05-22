@@ -639,7 +639,7 @@ public class ServiceManager implements RecordListener<Service> {
      *
      * @param namespaceId namespace
      * @param serviceName service name
-     * @param ephemeral   whether instance is ephemeral
+     * @param ephemeral   whether instance is ephemeral 临时节点，默认True
      * @param ips         instances
      * @throws NacosException nacos exception
      */
@@ -682,7 +682,8 @@ public class ServiceManager implements RecordListener<Service> {
             Instance... ips) throws NacosException {
         
         String key = KeyBuilder.buildInstanceListKey(namespaceId, serviceName, ephemeral);
-        
+
+        // 把instance从list删除
         List<Instance> instanceList = substractIpAddresses(service, ephemeral, ips);
         
         Instances instances = new Instances();
@@ -828,7 +829,8 @@ public class ServiceManager implements RecordListener<Service> {
                     "ip list can not be empty, service: " + service.getName() + ", ip list: " + JacksonUtils
                             .toJson(instanceMap.values()));
         }
-        
+
+        // 写时复制
         return new CopyOnWriteArrayList<>(instanceMap.values());
     }
     
@@ -1133,6 +1135,7 @@ public class ServiceManager implements RecordListener<Service> {
                         if (server.getAddress().equals(NetUtils.localServer())) {
                             continue;
                         }
+                        // 修改了信息发送
                         synchronizer.send(server.getAddress(), msg);
                     }
                 }

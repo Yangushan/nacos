@@ -166,7 +166,7 @@ public class PushService implements ApplicationContextAware, ApplicationListener
                     Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
                             client.getServiceName(), client.getAddrStr(), client.getAgent(),
                             (ackEntry == null ? null : ackEntry.key));
-                    
+                    // udp发送模式
                     udpPush(ackEntry);
                 }
             } catch (Exception e) {

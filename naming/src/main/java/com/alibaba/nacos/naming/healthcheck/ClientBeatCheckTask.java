@@ -76,6 +76,7 @@ public class ClientBeatCheckTask implements Runnable {
     @Override
     public void run() {
         try {
+            // 针对服务名称，定位对应的server节点，只有对应的service才会进行心跳检查
             if (!getDistroMapper().responsible(service.getName())) {
                 return;
             }
@@ -88,6 +89,7 @@ public class ClientBeatCheckTask implements Runnable {
             
             // first set health status of instances:
             for (Instance instance : instances) {
+                // 健康检查
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getInstanceHeartBeatTimeOut()) {
                     if (!instance.isMarked()) {
                         if (instance.isHealthy()) {
@@ -114,7 +116,8 @@ public class ClientBeatCheckTask implements Runnable {
                 if (instance.isMarked()) {
                     continue;
                 }
-                
+
+                // 删除失败的实例
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getIpDeleteTimeout()) {
                     // delete instance
                     Loggers.SRV_LOG.info("[AUTO-DELETE-IP] service: {}, ip: {}", service.getName(),

@@ -231,7 +231,8 @@ public class ServerListManager extends MemberChangeListener {
                         
                         Message msg = new Message();
                         msg.setData(status);
-                        
+
+                        // 当前服务给其他服务发送心跳
                         synchronizer.send(server.getAddress(), msg);
                     }
                 }

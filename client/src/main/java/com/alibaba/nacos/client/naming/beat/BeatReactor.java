@@ -85,6 +85,7 @@ public class BeatReactor implements Closeable {
         if ((existBeat = dom2Beat.put(key, beatInfo)) != null) {
             existBeat.setStopped(true);
         }
+        // 线程定时任务，发送心跳
         executorService.schedule(new BeatTask(beatInfo), beatInfo.getPeriod(), TimeUnit.MILLISECONDS);
         MetricsMonitor.getDom2BeatSizeMonitor().set(dom2Beat.size());
     }
@@ -132,6 +133,7 @@ public class BeatReactor implements Closeable {
         beatInfo.setWeight(instance.getWeight());
         beatInfo.setMetadata(instance.getMetadata());
         beatInfo.setScheduled(false);
+        // 心跳间隔
         beatInfo.setPeriod(instance.getInstanceHeartBeatInterval());
         return beatInfo;
     }
@@ -163,6 +165,7 @@ public class BeatReactor implements Closeable {
             }
             long nextTime = beatInfo.getPeriod();
             try {
+                // 发送心跳
                 JsonNode result = serverProxy.sendBeat(beatInfo, BeatReactor.this.lightBeatEnabled);
                 long interval = result.get("clientBeatInterval").asLong();
                 boolean lightBeatEnabled = false;
