@@ -206,6 +206,7 @@ public class RaftCore implements Closeable {
         if (stopWork) {
             throw new IllegalStateException("old raft protocol already stop work");
         }
+        // 不是leader转发
         if (!isLeader()) {
             ObjectNode params = JacksonUtils.createEmptyJsonNode();
             params.put("key", key);
@@ -234,18 +235,21 @@ public class RaftCore implements Closeable {
             ObjectNode json = JacksonUtils.createEmptyJsonNode();
             json.replace("datum", JacksonUtils.transferToJsonNode(datum));
             json.replace("source", JacksonUtils.transferToJsonNode(peers.local()));
-            
+
+            // 发布
             onPublish(datum, peers.local());
             
             final String content = json.toString();
             
             final CountDownLatch latch = new CountDownLatch(peers.majorityCount());
+            // 并没有完成2阶段提交，直接请求了commit
             for (final String server : peers.allServersIncludeMyself()) {
                 if (isLeader(server)) {
                     latch.countDown();
                     continue;
                 }
                 final String url = buildUrl(server, API_ON_PUB);
+                // 拿到所有的follower服务，给他们发送
                 HttpClient.asyncHttpPostLarge(url, Arrays.asList("key", key), content, new Callback<String>() {
                     @Override
                     public void onReceive(RestResult<String> result) {
@@ -270,7 +274,8 @@ public class RaftCore implements Closeable {
                 });
                 
             }
-            
+
+            // 等待超时，这里会有bug，其他的提交失败，但是leader可能成功，因为没有使用2阶段提交
             if (!latch.await(UtilsAndCommons.RAFT_PUBLISH_TIMEOUT, TimeUnit.MILLISECONDS)) {
                 // only majority servers return success can we consider this update success
                 Loggers.RAFT.error("data publish failed, caused failed to notify majority, key={}", key);
@@ -397,7 +402,9 @@ public class RaftCore implements Closeable {
                 local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);
             }
         }
+        // 写文件
         raftStore.updateTerm(local.term.get());
+        // 发布事件
         NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());
         Loggers.RAFT.info("data added/updated, key={}, term={}", datum.key, local.term);
     }
