@@ -134,7 +134,9 @@ public class DefaultPublisher extends Thread implements EventPublisher {
     @Override
     public boolean publish(Event event) {
         checkIsStart();
+        // 放入队列
         boolean success = this.queue.offer(event);
+        // 如果放入失败，直接发送，等于同步发送
         if (!success) {
             LOGGER.warn("Unable to plug in due to interruption, synchronize sending time, event : {}", event);
             receiveEvent(event);
@@ -173,6 +175,7 @@ public class DefaultPublisher extends Thread implements EventPublisher {
         }
         
         // Notification single event listener
+        // 拿到所有订阅者
         for (Subscriber subscriber : subscribers) {
             if (!subscriber.scopeMatches(event)) {
                 continue;

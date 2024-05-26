@@ -132,7 +132,8 @@ public class RpcConfigChangeNotifier extends Subscriber<LocalDataChangeEvent> {
         String group = strings[1];
         String tenant = strings.length > 2 ? strings[2] : "";
         String tag = event.tag;
-        
+
+        // 受到数据变更的事件
         configDataChanged(groupKey, dataId, group, tenant, isBeta, betaIps, tag);
         
     }
@@ -216,6 +217,7 @@ public class RpcConfigChangeNotifier extends Subscriber<LocalDataChangeEvent> {
             connectionManager.unregister(retryTask.connectionId);
         } else if (connectionManager.getConnection(retryTask.connectionId) != null) {
             // first time:delay 0s; second time:delay 2s; third time:delay 4s
+            // 如果失败，重拾时间越来越久
             ConfigExecutor.getClientConfigNotifierServiceExecutor()
                     .schedule(retryTask, retryTask.tryTimes * 2, TimeUnit.SECONDS);
         } else {

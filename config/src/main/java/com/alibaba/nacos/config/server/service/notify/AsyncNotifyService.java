@@ -112,6 +112,7 @@ public class AsyncNotifyService {
                                 new NotifySingleRpcTask(dataId, group, tenant, tag, dumpTs, evt.isBeta, evt.isBatch,
                                         member));
                     }
+                    // rpc调用通知
                     if (!rpcQueue.isEmpty()) {
                         ConfigExecutor.executeAsyncNotify(new AsyncRpcTask(rpcQueue));
                     }

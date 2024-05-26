@@ -640,6 +640,7 @@ public class ClientWorker implements Closeable {
         }
         
         private void initRpcClientHandler(final RpcClient rpcClientInner) {
+            // 注册handler
             /*
              * Register Config Change /Config ReSync Handler
              */
@@ -721,7 +722,8 @@ public class ClientWorker implements Closeable {
                     
                 }
             });
-            
+
+            // 注册订阅者
             subscriber = new Subscriber() {
                 @Override
                 public void onEvent(Event event) {
@@ -1082,6 +1084,7 @@ public class ClientWorker implements Closeable {
         @Override
         public ConfigResponse queryConfig(String dataId, String group, String tenant, long readTimeouts, boolean notify)
                 throws NacosException {
+            // grpc请求
             ConfigQueryRequest request = ConfigQueryRequest.build(dataId, group, tenant);
             request.putHeader(NOTIFY_HEADER, String.valueOf(notify));
             RpcClient rpcClient = getOneRunningClient();

@@ -143,10 +143,12 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
                                 md5 = cacheItem.getTagMd5(autoTag, acceptCharset);
                                 lastModified = cacheItem.getTagLastModified(autoTag);
                             }
+                            // 如果设置直接读，从数据库读，否则从文件读
                             if (PropertyUtil.isDirectRead()) {
                                 configInfoBase = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant,
                                         autoTag);
                             } else {
+                                // 直接读取的文件
                                 content = ConfigDiskServiceFactory.getInstance()
                                         .getTagContent(dataId, group, tenant, autoTag);
                             }
@@ -156,10 +158,12 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
                         } else {
                             md5 = cacheItem.getConfigCache().getMd5(acceptCharset);
                             lastModified = cacheItem.getConfigCache().getLastModifiedTs();
-                            
+
+                            // 如果设置直接读，从数据库读，否则从文件读
                             if (PropertyUtil.isDirectRead()) {
                                 configInfoBase = configInfoPersistService.findConfigInfo(dataId, group, tenant);
                             } else {
+                                // 直接读取的文件
                                 content = ConfigDiskServiceFactory.getInstance().getContent(dataId, group, tenant);
                             }
                             pullEvent = ConfigTraceService.PULL_EVENT;

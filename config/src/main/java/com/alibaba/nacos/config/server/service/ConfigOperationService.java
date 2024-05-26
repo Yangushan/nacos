@@ -108,9 +108,11 @@ public class ConfigOperationService {
                                 ErrorCode.RESOURCE_CONFLICT, "Cas publish fail, server md5 may have changed.");
                     }
                 } else {
+                    // 插入数据库
                     configOperateResult = configInfoPersistService.insertOrUpdate(configRequestInfo.getSrcIp(),
                             configForm.getSrcUser(), configInfo, configAdvanceInfo);
                 }
+                // 发布事件，事件驱动模型，这里完成配置更新
                 ConfigChangePublisher.notifyConfigChange(
                         new ConfigDataChangeEvent(false, configForm.getDataId(), configForm.getGroup(),
                                 configForm.getNamespaceId(), configOperateResult.getLastModified()));

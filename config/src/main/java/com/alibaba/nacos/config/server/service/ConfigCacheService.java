@@ -108,7 +108,7 @@ public class ConfigCacheService {
         }
         
         try {
-            
+            // 比较最后更新事件
             //check timestamp
             boolean lastModifiedOutDated = lastModifiedTs < ConfigCacheService.getLastModifiedTs(groupKey);
             if (lastModifiedOutDated) {
@@ -117,7 +117,8 @@ public class ConfigCacheService {
             }
             
             boolean newLastModified = lastModifiedTs > ConfigCacheService.getLastModifiedTs(groupKey);
-            
+
+            // 比较Md5
             if (md5 == null) {
                 md5 = MD5Utils.md5Hex(content, ENCODE_UTF8);
             }
@@ -129,6 +130,7 @@ public class ConfigCacheService {
                 if (!PropertyUtil.isDirectRead()) {
                     DUMP_LOG.info("[dump] md5 changed, save to disk cache ,groupKey={}, newMd5={},oldMd5={}", groupKey,
                             md5, localContentMd5);
+                    // 保存到disk file文件
                     ConfigDiskServiceFactory.getInstance().saveToDisk(dataId, group, tenant, content);
                 } else {
                     //ignore to save disk cache in direct model
@@ -143,6 +145,7 @@ public class ConfigCacheService {
                 DUMP_LOG.info(
                         "[dump] md5 changed, update md5 and timestamp in jvm cache ,groupKey={}, newMd5={},oldMd5={},lastModifiedTs={}",
                         groupKey, md5, localContentMd5, lastModifiedTs);
+                // 更新md5,发送事件
                 updateMd5(groupKey, md5, lastModifiedTs, encryptedDataKey);
             } else if (newLastModified) {
                 DUMP_LOG.info(
@@ -648,6 +651,7 @@ public class ConfigCacheService {
             cache.getConfigCache().setMd5Utf8(md5Utf8);
             cache.getConfigCache().setLastModifiedTs(lastModifiedTs);
             cache.getConfigCache().setEncryptedDataKey(encryptedDataKey);
+            // 发布事件，告诉客户端文件变更
             NotifyCenter.publishEvent(new LocalDataChangeEvent(groupKey));
         }
     }
